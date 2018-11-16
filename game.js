@@ -12,7 +12,7 @@
     const gridSizeY = 80;
     const width = canvasEl.width = gridSizeX;
     const height = canvasEl.height = gridSizeY;
-    const backgroundColor = "#000000";
+    const backgroundColor = "#515151";
 
 
 //GAME VARIABLES
@@ -22,24 +22,30 @@ let ballSpeedX = -25;
 let ballSpeedY = -10;
 let ballSizeX = 1;
 let ballSizeY = 1;
-let ballColor = "#D0D08A";
+let ballColor = "#FFFF00";
 let ballPositionX = Math.round(gridSizeX * .5); 
 let ballPositionY = Math.round(gridSizeY * .5);
 
 let batSpeedY = 40;
+
 let batSizeX = 1;
-let batSizeY = 12;
-let bat1Color = "#73CDA0";
-let bat2Color = "#C073CD";
+let batSizeYPart = 4
+let batSizeY = 3 * batSizeYPart
+
+let bat1ColorMiddle = "#0000FF";
+let bat1ColorTopBottom = "#FF0000"
+let bat2ColorMiddle = "#0000FF";
+let bat2ColorTopBottom = "#00FF00";
+
 let bat1PositionX = 1;
 let bat1PositionY = Math.round((gridSizeY - batSizeY * .5) * .5);  // N -- (80 - 12 * .5) *.5 = 74 * .5 = 37 
+let bat2PositionX = gridSizeX - 2;
+let bat2PositionY = Math.round((gridSizeY - batSizeY * .5) * .5); // N -- 37
+
 let bat1movingUp = false;
 let bat1movingDown = false;
 let bat2movingUp = false; 
 let bat2movingDown = false;
-
-let bat2PositionX = gridSizeX - 2;
-let bat2PositionY = Math.round((gridSizeY - batSizeY * .5) * .5); // N -- 37
 
 let scoreLeft = 0;
 let scoreRight = 0;
@@ -51,7 +57,7 @@ let gameOver = false;
 //RENDER FUNCTIONS
 
 /**
- * Draw a rectangle at given positon and given size with given color
+ * Draw a rectangle at given position and given size with given color
  * N -- The param tag provides the name, type, and description of a function parameter.
  * N -- The parameter's type is enclosed in curly brackets
  * @param {number} xPos 
@@ -89,13 +95,17 @@ function drawGame() {
     // N-- 0, 0, 128, 80, zwart
     drawRectangle(0,0,width,height, backgroundColor);
 
-    //draw player 1
+    //draw player 1 (middle)
     // N-- initially 1, 37, 1, 12, groen
-    drawRectangle(bat1PositionX, bat1PositionY, batSizeX, batSizeY, bat1Color);
+    drawRectangle(bat1PositionX, bat1PositionY, batSizeX, batSizeYPart, bat1ColorTopBottom);
+    drawRectangle(bat1PositionX, bat1PositionY + batSizeYPart, batSizeX, batSizeYPart, bat1ColorMiddle);
+    drawRectangle(bat1PositionX, bat1PositionY + batSizeYPart * 2, batSizeX, batSizeYPart, bat1ColorTopBottom);
 
     //draw player 2
     // N-- initially  126, 37, 1, 12, paars
-    drawRectangle(bat2PositionX, bat2PositionY, batSizeX, batSizeY, bat2Color);
+    drawRectangle(bat2PositionX, bat2PositionY, batSizeX, batSizeYPart, bat2ColorTopBottom);
+    drawRectangle(bat2PositionX, bat2PositionY + batSizeYPart, batSizeX, batSizeYPart, bat2ColorMiddle);
+    drawRectangle(bat2PositionX, bat2PositionY + batSizeYPart * 2, batSizeX, batSizeYPart, bat2ColorTopBottom);
 
     //draw ball
     // N-- initially 64, 40, 1, 1, rood
@@ -109,9 +119,22 @@ function drawGame() {
 
 
 //GAMELOOP
+
+    console.log('setOriginal buiten update met 2: ', setOriginalBallSpeed(2))
+
     /**
      * Restarts the game
      */
+    function setOriginalBallSpeed() {
+        if (ballSpeedX > 0) {
+            ballSpeedX = -25;
+            return ballSpeedX;
+        } else {
+            ballSpeedX = 25;
+            return ballSpeedX;
+        }
+    }
+
     function restart() {
         setTimeout(function() {
             //change game over to false
@@ -144,36 +167,52 @@ function drawGame() {
         now = performance.now();
         deltaTime = (now - lastTime) * .001;
         lastTime = now;
-
+        
         //move ball
         // N -- ballPositionX === initially 64.
-
+        
         ballPositionX = ballPositionX + ballSpeedX * deltaTime;
         ballPositionY = ballPositionY + ballSpeedY * deltaTime;
-
+        
         //for colission checking we will use a rounded ball position so we can check if a ball is matching an exact round number
         let roundedBallPositionX = Math.round(ballPositionX);
         let roundedBallPositionY = Math.round(ballPositionY);
-
+        
         //check for ball colission with player 1
-        if(roundedBallPositionX === bat1PositionX) { //check if the ballposition is the same as the players x position
+        if (roundedBallPositionX === bat1PositionX) { //check if the ballposition is the same as the players x position
             if(
-                roundedBallPositionY >= bat1PositionY && //the rounded ballPosition is greater or equal to the position of the bat
-                roundedBallPositionY < bat1PositionY + batSizeY //the roudned ballPosition is smaller than the batPosition plus its size
+                (roundedBallPositionY >= bat1PositionY && //the rounded ballPosition is greater or equal to the position of the bat
+                roundedBallPositionY < bat1PositionY + batSizeYPart) 
+                ||
+                (roundedBallPositionY >= bat1PositionY + 2 * batSizeYPart &&
+                    roundedBallPositionY < bat1PositionY + 3 * batSizeYPart)
+                //the rounded ballPosition is smaller than the batPosition plus its size
                 //if both statements are true we are connecting vertically with the bat
             ) {
                 //ball collided with player so we reverse it's xSpeed so we have a "bounce"
-                ballSpeedX = ballSpeedX * -1;
+                setOriginalBallSpeed()
+            } else if (
+                roundedBallPositionY >= bat1PositionY + 1 * batSizeYPart &&
+                    roundedBallPositionY < bat1PositionY + 2 * batSizeYPart) {
+                ballSpeedX = ballSpeedX * -1.5
             }
         }
 
         //@TODO DONE: check for ball colission with player 2
-        if(roundedBallPositionX === bat2PositionX) { 
-            if(
-                roundedBallPositionY >= bat2PositionY && 
-                roundedBallPositionY < bat2PositionY + batSizeY
-            ) {
-                ballSpeedX *= -1;
+        if (roundedBallPositionX === bat2PositionX) { 
+            if (
+                (roundedBallPositionY >= bat2PositionY && 
+                roundedBallPositionY < bat2PositionY + batSizeYPart)
+                ||
+                (roundedBallPositionY >= bat2PositionY + 2 * batSizeYPart &&
+                    roundedBallPositionY < bat2PositionY + 3 * batSizeYPart)
+                // set ballspeed back to -25 or 25
+            ) { 
+                setOriginalBallSpeed()
+            } else if (
+                roundedBallPositionY >= bat2PositionY + 1 * batSizeYPart &&
+                    roundedBallPositionY < bat2PositionY + 2 * batSizeYPart) {
+                ballSpeedX = ballSpeedX * -1.5  
             }
         }
 
