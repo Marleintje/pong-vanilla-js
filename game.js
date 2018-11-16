@@ -20,6 +20,7 @@
 //speed is in units per second, a unit is a square on the playfield
 let ballSpeedX = -25;
 let ballSpeedY = -10;
+let ballacceleration = 1.3
 let ballSizeX = 1;
 let ballSizeY = 1;
 let ballColor = "#FFFF00";
@@ -194,7 +195,7 @@ function drawGame() {
             } else if (
                 roundedBallPositionY >= bat1PositionY + 1 * batSizeYPart &&
                     roundedBallPositionY < bat1PositionY + 2 * batSizeYPart) {
-                ballSpeedX = ballSpeedX * -1.5
+                ballSpeedX = ballSpeedX * -ballacceleration
             }
         }
 
@@ -212,7 +213,7 @@ function drawGame() {
             } else if (
                 roundedBallPositionY >= bat2PositionY + 1 * batSizeYPart &&
                     roundedBallPositionY < bat2PositionY + 2 * batSizeYPart) {
-                ballSpeedX = ballSpeedX * -1.5  
+                ballSpeedX = ballSpeedX * -ballacceleration
             }
         }
 
